@@ -4,13 +4,40 @@ indent() {
   sed -u 's/^/       /'
 }
 
-echo "-----> Found a hello.txt"
+echo "-----> Found Python app"
 
-# if hello.txt is empty, abort the build
-if [ ! -s $1/hello.txt ]; then
-  echo "hello.txt was empty" | indent
-  exit 1
-fi
+GRAPHVIZ_VERSION="2.34.0"
+GRAPHVIZ_PATH="graphviz"
 
-# replace hello with goodbye in a new file
-cat $1/hello.txt | sed -e "s/[Hh]ello/Goodbye/g" > $1/goodbye.txt
+set -eo pipefall
+
+
+# get the dirs
+BIN_DIR=$(cd $(dirname $0); pwd)
+ROOT_DIR=$(dirname $BIN_DIR)
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+# include hidden (dot) files
+shopt -s dotglob
+
+
+echo "-----> Downloading graphviz"
+# need to download graphviz binary and dependencies
+GRAPHVIZ_SOURCE_URL="http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.34.0.tar.gz"
+GRAPHVIZ_WORKDIR="iosu/graphviz"
+mkdir -p $1/$GRAPHVIZ_WORKDIR
+cd $1/$GRAPHVIZ_WORKDIR
+curl -O $GRAPHVIZ_BINARY > /dev/null 2>&1
+tar zxvf graphviz-2.28.0.tar.gz > /dev/null 2>&1
+cd graphviz-2.34.0
+echo "-----> Configuring graphviz"
+./configure --prefix=$CACHE_DIR/.tools/graphviz > /dev/null 2>&1
+echo "-----> Compiling graphviz"
+make -j5 >/dev/null 2>&1
+echo "-----> Installing graphviz"
+make install > /dev/null 2>&1
+echo "gaphviz installed" | indent
+
+exit 0
+
